@@ -32,7 +32,7 @@ def isingdenoise(
 
 
 def denoise(
-    file_path: str,
+    image_source: str,
     noise_strength: float = 0.9,
     extfield_strength: float = 0.9,
     burnin: int = 50000,
@@ -41,8 +41,11 @@ def denoise(
     use_default_neighbours: bool = True,
     fig_title: str = "",
 ):
-    image = skimage.io.imread(file_path)
-    image = (image[:, :, 0].astype(np.int32) * 2) - 1
+    if isinstance(image_source, str):
+        image = skimage.io.imread(image_source)
+        image = (image[:, :, 0].astype(np.int32) * 2) - 1
+    else:
+        image = image_source
     noise = np.random.random(size=image.size).reshape(image.shape) > noise_strength
     noisy = np.array(image)
     noisy[noise] = -noisy[noise]
