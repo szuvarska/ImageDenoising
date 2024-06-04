@@ -114,12 +114,13 @@ def denoise(
 
 def main():
     denoise(
-        "img/mini_logo.png",
+        "img/mini_text.png",
         noise_strength=0.9,
         extfield_strength=0.9,
         burnin=50000,
         loops=500000,
-        make_gif=False,
+        use_default_neighbours=False,
+        make_gif=True,
         gif_title="mini",
         fps=3
     )
