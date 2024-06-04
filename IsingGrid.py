@@ -4,7 +4,7 @@ import matplotlib.cm as cm
 
 
 class IsingGrid:
-    def __init__(self, height, width, extfield, invtemp):
+    def __init__(self, height, width, extfield, invtemp, use_default_neighbours=True):
         self.width, self.height, self.extfield, self.invtemp = (
             height,
             width,
@@ -12,6 +12,10 @@ class IsingGrid:
             invtemp,
         )
         self.grid = np.zeros([self.width, self.height], dtype=np.int8) + 1
+        if use_default_neighbours:
+            self.neighbours_func = self.neighbours
+        else:
+            self.neighbours_func = self.better_neighbours
 
     def plot(self):
         plt.imshow(
@@ -32,28 +36,35 @@ class IsingGrid:
         ) - 1
 
     def neighbours(self, x, y):
-        n = []
-        if x == 0:
-            n.append((self.width - 1, y))
-        else:
-            n.append((x - 1, y))
-        if x == self.width - 1:
-            n.append((0, y))
-        else:
-            n.append((x + 1, y))
-        if y == 0:
-            n.append((x, self.height - 1))
-        else:
-            n.append((x, y - 1))
-        if y == self.height - 1:
-            n.append((x, 0))
-        else:
-            n.append((x, y + 1))
-        return n
+        left_neighbour = ((x - 1) % self.width, y)
+        right_neighbour = ((x + 1) % self.width, y)
+        up_neighbour = (x, (y + 1) % self.height)
+        down_neighbour = (x, (y - 1) % self.height)
+        return [left_neighbour, right_neighbour, up_neighbour, down_neighbour]
+
+    def better_neighbours(self, x, y):
+        left_neighbour = ((x - 1) % self.width, y)
+        right_neighbour = ((x + 1) % self.width, y)
+        top_neighbour = (x, (y + 1) % self.height)
+        down_neighbour = (x, (y - 1) % self.height)
+        left_top_neighbour = ((x - 1) % self.width, (y + 1) % self.height)
+        right_top_neighbour = ((x + 1) % self.width, (y + 1) % self.height)
+        left_down_neighbour = ((x - 1) % self.width, (y - 1) % self.height)
+        right_down_neighbour = ((x + 1) % self.width, (y - 1) % self.height)
+        return [
+            left_neighbour,
+            right_neighbour,
+            top_neighbour,
+            down_neighbour,
+            left_top_neighbour,
+            right_top_neighbour,
+            left_down_neighbour,
+            right_down_neighbour,
+        ]
 
     def local_energy(self, x, y):
         return self.extfield + sum(
-            self.grid[xx, yy] for (xx, yy) in self.neighbours(x, y)
+            self.grid[xx, yy] for (xx, yy) in self.neighbours_func(x, y)
         )
 
     def total_energy(self):
@@ -63,7 +74,7 @@ class IsingGrid:
         energy += (
             -sum(
                 self.grid[x, y]
-                * sum(self.grid[xx, yy] for (xx, yy) in self.neighbours(x, y))
+                * sum(self.grid[xx, yy] for (xx, yy) in self.neighbours_func(x, y))
                 for x in range(self.width)
                 for y in range(self.height)
             )
@@ -89,7 +100,7 @@ class IsingGrid:
     def from_number(self, n):
         """Convert an integer 0 <= n < 2**(width*height) into a grid."""
         binstring = bin(n)[2:]
-        binstring = "0" * (N - len(binstring)) + binstring
+        binstring = "0" * (n - len(binstring)) + binstring
         self.grid = np.array(
             [int(x) * 2 - 1 for x in binstring], dtype=np.int8
         ).reshape(self.width, self.height)
