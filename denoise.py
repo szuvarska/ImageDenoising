@@ -38,7 +38,8 @@ def denoise(
     burnin: int = 50000,
     loops: int = 500000,
     invtemp: float = 2.0,
-    use_default_neighbours=True,
+    use_default_neighbours: bool = True,
+    fig_title: str = "",
 ):
     image = skimage.io.imread(file_path)
     image = (image[:, :, 0].astype(np.int32) * 2) - 1
@@ -65,6 +66,8 @@ def denoise(
         # remove the y-axis
         ax.yaxis.set_visible(False)
         ax.xaxis.set_visible(False)
+
+    fig.suptitle(fig_title)
 
 
 def main():
