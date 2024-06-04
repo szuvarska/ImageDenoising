@@ -8,33 +8,32 @@ import os
 import shutil
 
 
-def save_frame(avg: np.array, digits, directory_name: str = 'image', i: int = 1):
+def save_frame(avg: np.array, digits, i: int = 1):
     avg[avg >= 0] = 1
     avg[avg < 0] = -1
     avg = avg.astype(np.int32)
     plt.imshow(avg, cmap=cm.gray, aspect="equal", interpolation="none", vmin=-1, vmax=1)
     plt.axis('off')  # This line removes the axes
     plt.gca().set_position([0, 0, 1, 1])  # This line makes the figure fill the whole plot
-    directory_path = f"frames/{directory_name}"
-    os.mkdir(directory_path) if not os.path.exists(directory_path) else None
-    plt.savefig(f"{directory_path}/frame_{str(i).zfill(digits)}.png", bbox_inches='tight', pad_inches=0,
+    os.mkdir("frames") if not os.path.exists("frames") else None
+    plt.savefig(f"frames/frame_{str(i).zfill(digits)}.png", bbox_inches='tight', pad_inches=0,
                 transparent=True)
     plt.clf()  # This line clears the current figure
 
 
-def create_gif(output_file_name: str, input_directory_name: str = 'image', fps: int = 10):
+def create_gif(output_file_name: str, fps: int = 10):
     images = []
-    for file_name in sorted(os.listdir(f"frames/{input_directory_name}")):
+    for file_name in sorted(os.listdir("frames")):
         if file_name.endswith('.png'):
-            file_path = os.path.join(f"frames/{input_directory_name}", file_name)
+            file_path = os.path.join("frames", file_name)
             images.append(imageio.imread(file_path))
     imageio.mimsave(f"gifs/{output_file_name}.gif", images, fps=fps)
     # Delete the directory with the frames
-    shutil.rmtree(f"frames/{input_directory_name}")
+    shutil.rmtree("frames")
 
 
 def isingdenoise(noisy: np.array, q: float, burnin: int = 50000, loops: int = 500000, invtemp: float = 2.0,
-                 make_gif: bool = False, title: str = "denoise", save_frames_iter: int = 100):
+                 make_gif: bool = False, save_frames_iter: int = 100):
     h = 0.5 * np.log(q / (1 - q))
     gg = IsingGridVaryingField(noisy.shape[0], noisy.shape[1], h * noisy, invtemp)
     gg.grid = np.array(noisy)
@@ -54,7 +53,7 @@ def isingdenoise(noisy: np.array, q: float, burnin: int = 50000, loops: int = 50
         # use the commented line below if you want to make the beginning slower
         # if (i < loops / 500 and i % (loops / 5000) == 0) or (i > loops / 500 and i % (loops / save_frames_iter) == 0):
         if i % (loops / save_frames_iter) == 0:
-            save_frame(avg / (i + 1), digits, title, i + 1)
+            save_frame(avg / (i + 1), digits, i + 1)
 
     return avg / loops
 
@@ -67,7 +66,7 @@ def denoise(file_path: str, noise_strength: float = 0.9, extfield_strength: floa
     noise = np.random.random(size=image.size).reshape(image.shape) > noise_strength
     noisy = np.array(image)
     noisy[noise] = -noisy[noise]
-    avg = isingdenoise(noisy, extfield_strength, burnin, loops, invtemp, make_gif, title, save_frames_iter)
+    avg = isingdenoise(noisy, extfield_strength, burnin, loops, invtemp, make_gif, save_frames_iter)
     avg[avg >= 0] = 1
     avg[avg < 0] = -1
     avg = avg.astype(np.int32)
@@ -75,7 +74,7 @@ def denoise(file_path: str, noise_strength: float = 0.9, extfield_strength: floa
     fig, axes = plt.subplots(ncols=2, figsize=(11, 6))
     axes[0].imshow(avg, cmap=cm.gray, aspect="equal", interpolation="none", vmin=-1, vmax=1)
     axes[1].imshow(noisy, cmap=cm.gray, aspect="equal", interpolation="none", vmin=-1, vmax=1)
-    create_gif(title, title, fps)
+    create_gif(title, fps)
 
 
 def main():
