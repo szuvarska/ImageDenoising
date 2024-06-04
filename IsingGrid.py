@@ -1,5 +1,3 @@
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
 import numpy as np
 
 
@@ -52,7 +50,7 @@ class IsingGrid:
         n = np.random.randint(0, self.width * self.height)
         y = n // self.width
         x = n % self.width
-        p = 1 / (1 + np.exp(-2 * self.invtemp * self.local_energy(x, y)))
+        p = 1 / (1 + np.exp(-2 * self.invtemp * self.local_energy(x, y), dtype=np.float128))
         if np.random.random() <= p:
             self.grid[x, y] = 1
         else:
