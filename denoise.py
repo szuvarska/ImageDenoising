@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
 
-def isingdenoise(noisy, q, burnin=50000, loops=500000):
+def isingdenoise(noisy: np.array, q: float, burnin: int = 50000, loops: int = 500000, invtemp: float = 2.0):
     h = 0.5 * np.log(q / (1 - q))
-    gg = IsingGridVaryingField(noisy.shape[0], noisy.shape[1], h * noisy, 2)
+    gg = IsingGridVaryingField(noisy.shape[0], noisy.shape[1], h * noisy, invtemp)
     gg.grid = np.array(noisy)
 
     # Burn-in
@@ -23,13 +23,13 @@ def isingdenoise(noisy, q, burnin=50000, loops=500000):
 
 
 def denoise(file_path: str, noise_strength: float = 0.9, extfield_strength: float = 0.9, burnin: int = 50000,
-            loops: int = 500000):
+            loops: int = 500000, invtemp: float = 2.0):
     image = skimage.io.imread(file_path)
     image = (image[:, :, 0].astype(np.int32) * 2) - 1
     noise = np.random.random(size=image.size).reshape(image.shape) > noise_strength
     noisy = np.array(image)
     noisy[noise] = -noisy[noise]
-    avg = isingdenoise(noisy, extfield_strength, burnin, loops)
+    avg = isingdenoise(noisy, extfield_strength, burnin, loops, invtemp)
     avg[avg >= 0] = 1
     avg[avg < 0] = -1
     avg = avg.astype(np.int32)
