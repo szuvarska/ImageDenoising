@@ -1,11 +1,11 @@
 from IsingGridVaryingField import IsingGridVaryingField
-import skimage.io # scikit-image
+import skimage.io  # scikit-image
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
 
-def IsingDeNoise(noisy, q, burnin=50000, loops=500000):
+def isingdenoise(noisy, q, burnin=50000, loops=500000):
     h = 0.5 * np.log(q / (1 - q))
     gg = IsingGridVaryingField(noisy.shape[0], noisy.shape[1], h * noisy, 2)
     gg.grid = np.array(noisy)
@@ -29,7 +29,7 @@ def denoise(file_path: str, noise_strength: float = 0.9, extfield_strength: floa
     noise = np.random.random(size=image.size).reshape(image.shape) > noise_strength
     noisy = np.array(image)
     noisy[noise] = -noisy[noise]
-    avg = IsingDeNoise(noisy, extfield_strength, burnin, loops)
+    avg = isingdenoise(noisy, extfield_strength, burnin, loops)
     avg[avg >= 0] = 1
     avg[avg < 0] = -1
     avg = avg.astype(np.int32)
