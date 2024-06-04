@@ -94,21 +94,24 @@ def plot_accuracy(accuracies1: list, accuracies2: list):
 
 
 def denoise(
-        file_path: str,
-        noise_strength: float = 0.9,
-        extfield_strength: float = 0.9,
-        burnin: int = 50000,
-        loops: int = 500000,
-        invtemp: float = 2.0,
-        use_default_neighbours: bool = True,
-        fig_title: str = "",
-        make_gif: bool = False,
-        gif_title: str = "denoise",
-        save_frames_iter: int = 100,
-        fps: int = 10
+    image_source: str,
+    noise_strength: float = 0.9,
+    extfield_strength: float = 0.9,
+    burnin: int = 50000,
+    loops: int = 500000,
+    invtemp: float = 2.0,
+    use_default_neighbours: bool = True,
+    fig_title: str = "",
+    make_gif: bool = False,
+    gif_title: str = "denoise",
+    save_frames_iter: int = 100,
+    fps: int = 10
 ):
-    image = skimage.io.imread(file_path)
-    image = (image[:, :, 0].astype(np.int32) * 2) - 1
+    if isinstance(image_source, str):
+        image = skimage.io.imread(image_source)
+        image = (image[:, :, 0].astype(np.int32) * 2) - 1
+    else:
+        image = image_source
     noise = np.random.random(size=image.size).reshape(image.shape) > noise_strength
     noisy = np.array(image)
     noisy[noise] = -noisy[noise]
