@@ -82,12 +82,14 @@ def isingdenoise(
     return avg / loops, accuracies
 
 
-def plot_accuracy(accuracies: list):
+def plot_accuracy(accuracies1: list, accuracies2: list):
     plt.figure(figsize=(10, 6))
-    plt.plot(accuracies)
-    plt.title(f'Accuracy of Denoising Over Time')
+    plt.plot(accuracies1, label='default neighbours', color='blue', linewidth=3)
+    plt.plot(accuracies2, label='improved neighbours', color='red', linewidth=3)
+    plt.title('Accuracy of Denoising Over Time')
     plt.xlabel('Iteration')
     plt.ylabel('Accuracy')
+    plt.legend()
     plt.show()
 
 
@@ -133,21 +135,31 @@ def denoise(
         ax.xaxis.set_visible(False)
 
     fig.suptitle(fig_title)
-    plot_accuracy(accuracies)
     if make_gif:
         create_gif(gif_title, fps)
+    return accuracies
 
 
 def main():
-    denoise(
+    accuracies1 = denoise(
         "img/mini_logo.png",
-        noise_strength=0.9,
+        noise_strength=0.8,
         extfield_strength=0.9,
         burnin=50000,
         loops=500000,
         use_default_neighbours=True,
         make_gif=False
     )
+    accuracies2 = denoise(
+        "img/mini_logo.png",
+        noise_strength=0.8,
+        extfield_strength=0.9,
+        burnin=50000,
+        loops=500000,
+        use_default_neighbours=False,
+        make_gif=False
+    )
+    plot_accuracy(accuracies1, accuracies2)
     plt.show()
 
 
