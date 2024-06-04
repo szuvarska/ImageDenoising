@@ -142,22 +142,29 @@ def denoise(
 
 def main():
     accuracies1 = denoise(
-        "img/mini_logo.png",
-        noise_strength=0.8,
+        "img/taylor_swift.png",
+        noise_strength=0.9,
         extfield_strength=0.9,
         burnin=50000,
         loops=500000,
         use_default_neighbours=True,
-        make_gif=False
+        make_gif=True,
+        gif_title="taylor_swift_default",
+        save_frames_iter=100,
+        fps=3
     )
+    plt.close()
     accuracies2 = denoise(
-        "img/mini_logo.png",
-        noise_strength=0.8,
+        "img/taylor_swift.png",
+        noise_strength=0.9,
         extfield_strength=0.9,
         burnin=50000,
         loops=500000,
         use_default_neighbours=False,
-        make_gif=False
+        make_gif=True,
+        gif_title="taylor_swift_improved",
+        save_frames_iter=100,
+        fps=3
     )
     plot_accuracy(accuracies1, accuracies2)
     plt.show()
