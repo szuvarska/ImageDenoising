@@ -32,14 +32,31 @@ class IsingGrid:
         ) - 1
 
     def neighbours(self, x, y):
-        bottom = ((x - 1) % self.width, y)
-        top = ((x + 1) % self.width, y)
-        left = (x, (y - 1) % self.height)
-        right = (x, (y + 1) % self.height)
-        return [bottom, top, left, right]
+        left_neighbour = ((x - 1) % self.width, y)
+        right_neighbour = ((x + 1) % self.width, y)
+        up_neighbour = (x, (y + 1) % self.height)
+        down_neighbour = (x, (y - 1) % self.height)
+        return [left_neighbour, right_neighbour, up_neighbour, down_neighbour]
 
-    def grid_neighbours(self, x, y):
-        pass
+    def better_neighbours(self, x, y):
+        left_neighbour = ((x - 1) % self.width, y)
+        right_neighbour = ((x + 1) % self.width, y)
+        top_neighbour = (x, (y + 1) % self.height)
+        down_neighbour = (x, (y - 1) % self.height)
+        left_top_neighbour = ((x - 1) % self.width, (y + 1) % self.height)
+        right_top_neighbour = ((x + 1) % self.width, (y + 1) % self.height)
+        left_down_neighbour = ((x - 1) % self.width, (y - 1) % self.height)
+        right_down_neighbour = ((x + 1) % self.width, (y - 1) % self.height)
+        return [
+            left_neighbour,
+            right_neighbour,
+            top_neighbour,
+            down_neighbour,
+            left_top_neighbour,
+            right_top_neighbour,
+            left_down_neighbour,
+            right_down_neighbour,
+        ]
 
     def local_energy(self, x, y):
         return self.extfield + sum(
