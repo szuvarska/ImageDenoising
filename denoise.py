@@ -11,9 +11,12 @@ def isingdenoise(
     burnin: int = 50000,
     loops: int = 500000,
     invtemp: float = 2.0,
+    use_default_neighbours=True,
 ):
     h = 0.5 * np.log(q / (1 - q))
-    gg = IsingGridVaryingField(noisy.shape[0], noisy.shape[1], h * noisy, invtemp)
+    gg = IsingGridVaryingField(
+        noisy.shape[0], noisy.shape[1], h * noisy, invtemp, use_default_neighbours
+    )
     gg.grid = np.array(noisy)
 
     # Burn-in
@@ -35,13 +38,16 @@ def denoise(
     burnin: int = 50000,
     loops: int = 500000,
     invtemp: float = 2.0,
+    use_default_neighbours=True,
 ):
     image = skimage.io.imread(file_path)
     image = (image[:, :, 0].astype(np.int32) * 2) - 1
     noise = np.random.random(size=image.size).reshape(image.shape) > noise_strength
     noisy = np.array(image)
     noisy[noise] = -noisy[noise]
-    avg = isingdenoise(noisy, extfield_strength, burnin, loops, invtemp)
+    avg = isingdenoise(
+        noisy, extfield_strength, burnin, loops, invtemp, use_default_neighbours
+    )
     avg[avg >= 0] = 1
     avg[avg < 0] = -1
     avg = avg.astype(np.int32)
