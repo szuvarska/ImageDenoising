@@ -1,3 +1,4 @@
-scikit-image
-numpy
-matplotlib
+scikit-image>=0.23.2
+numpy>=1.23.5
+matplotlib>=3.5.1
+imageio>=2.34.1
