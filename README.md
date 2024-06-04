@@ -2,9 +2,9 @@
 
 ## Do zrobienia
 - Wpływ kształtu obrazu na jakość odszumienia
-- Intensywność zaszumienia na jakość odszumienia
-- Poprawienie funkcji sąsiedztwa
+- Wpływ intensywności zaszumienia na jakość odszumienia
+- ~~Poprawienie funkcji sąsiedztwa~~
 - Porównanie z innymi metodami odszumiania
 - Przepisanie na gpu
 - Rozszerzenie na odcienie szarości
-- Zrobienie gifów
+- ~~Zrobienie gifów~~
