@@ -32,24 +32,14 @@ class IsingGrid:
         ) - 1
 
     def neighbours(self, x, y):
-        n = []
-        if x == 0:
-            n.append((self.width - 1, y))
-        else:
-            n.append((x - 1, y))
-        if x == self.width - 1:
-            n.append((0, y))
-        else:
-            n.append((x + 1, y))
-        if y == 0:
-            n.append((x, self.height - 1))
-        else:
-            n.append((x, y - 1))
-        if y == self.height - 1:
-            n.append((x, 0))
-        else:
-            n.append((x, y + 1))
-        return n
+        bottom = ((x - 1) % self.width, y)
+        top = ((x + 1) % self.width, y)
+        left = (x, (y - 1) % self.height)
+        right = (x, (y + 1) % self.height)
+        return [bottom, top, left, right]
+
+    def grid_neighbours(self, x, y):
+        pass
 
     def local_energy(self, x, y):
         return self.extfield + sum(
