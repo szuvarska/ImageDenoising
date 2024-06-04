@@ -31,17 +31,28 @@ def create_gif(output_file_name: str, fps: int = 10):
     # Delete the directory with the frames
     shutil.rmtree("frames")
 
-    
+
+def calculate_accuracy(original: np.array, denoised: np.array) -> float:
+    denoised[denoised >= 0] = 1
+    denoised[denoised < 0] = -1
+    denoised = denoised.astype(np.int32)
+    correct_pixels = np.sum(original == denoised)
+    total_pixels = original.size
+    accuracy = correct_pixels / total_pixels
+    return accuracy
+
+
 def isingdenoise(
-    noisy: np.array,
-    q: float,
-    burnin: int = 50000,
-    loops: int = 500000,
-    invtemp: float = 2.0,
-    use_default_neighbours=True,
-    make_gif: bool = False, 
-    save_frames_iter: int = 100
-):
+        original: np.array,
+        noisy: np.array,
+        q: float,
+        burnin: int = 50000,
+        loops: int = 500000,
+        invtemp: float = 2.0,
+        use_default_neighbours=True,
+        make_gif: bool = False,
+        save_frames_iter: int = 100
+) -> (np.array, list):
     h = 0.5 * np.log(q / (1 - q))
     gg = IsingGridVaryingField(
         noisy.shape[0], noisy.shape[1], h * noisy, invtemp, use_default_neighbours
@@ -55,9 +66,12 @@ def isingdenoise(
     digits = len(str(loops))
     # Sample
     avg = np.zeros_like(noisy).astype(np.float64)
+    accuracies = []
     for i in range(loops):
         gg.gibbs_move()
         avg += gg.grid
+        accuracy = calculate_accuracy(original, avg / (i + 1))
+        accuracies.append(accuracy)
         if not make_gif:
             continue
         # use the commented line below if you want to make the beginning slower
@@ -65,30 +79,42 @@ def isingdenoise(
         if i % (loops / save_frames_iter) == 0:
             save_frame(avg / (i + 1), digits, i + 1)
 
-    return avg / loops
+    return avg / loops, accuracies
+
+
+def plot_accuracy(accuracies1: list, accuracies2: list):
+    plt.figure(figsize=(10, 6))
+    plt.plot(accuracies1, label='default neighbours', color='blue', linewidth=3)
+    plt.plot(accuracies2, label='improved neighbours', color='red', linewidth=3)
+    plt.title('Accuracy of Denoising Over Time')
+    plt.xlabel('Iteration')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.show()
+
 
 def denoise(
-    file_path: str,
-    noise_strength: float = 0.9,
-    extfield_strength: float = 0.9,
-    burnin: int = 50000,
-    loops: int = 500000,
-    invtemp: float = 2.0,
-    use_default_neighbours: bool = True,
-    fig_title: str = "",
-    make_gif: bool = False,
-    gif_title: str = "denoise",
-    save_frames_iter: int = 100,
-    fps: int = 10
+        file_path: str,
+        noise_strength: float = 0.9,
+        extfield_strength: float = 0.9,
+        burnin: int = 50000,
+        loops: int = 500000,
+        invtemp: float = 2.0,
+        use_default_neighbours: bool = True,
+        fig_title: str = "",
+        make_gif: bool = False,
+        gif_title: str = "denoise",
+        save_frames_iter: int = 100,
+        fps: int = 10
 ):
     image = skimage.io.imread(file_path)
     image = (image[:, :, 0].astype(np.int32) * 2) - 1
     noise = np.random.random(size=image.size).reshape(image.shape) > noise_strength
     noisy = np.array(image)
     noisy[noise] = -noisy[noise]
-    avg = isingdenoise(
-        noisy, extfield_strength, burnin, loops, invtemp, use_default_neighbours, make_gif, 
-      save_frames_iter
+    avg, accuracies = isingdenoise(
+        image, noisy, extfield_strength, burnin, loops, invtemp, use_default_neighbours, make_gif,
+        save_frames_iter
     )
     avg[avg >= 0] = 1
     avg[avg < 0] = -1
@@ -109,21 +135,31 @@ def denoise(
         ax.xaxis.set_visible(False)
 
     fig.suptitle(fig_title)
-    create_gif(gif_title, fps)
+    if make_gif:
+        create_gif(gif_title, fps)
+    return accuracies
 
 
 def main():
-    denoise(
-        "img/mini_text.png",
-        noise_strength=0.9,
+    accuracies1 = denoise(
+        "img/mini_logo.png",
+        noise_strength=0.8,
+        extfield_strength=0.9,
+        burnin=50000,
+        loops=500000,
+        use_default_neighbours=True,
+        make_gif=False
+    )
+    accuracies2 = denoise(
+        "img/mini_logo.png",
+        noise_strength=0.8,
         extfield_strength=0.9,
         burnin=50000,
         loops=500000,
         use_default_neighbours=False,
-        make_gif=True,
-        gif_title="mini",
-        fps=3
+        make_gif=False
     )
+    plot_accuracy(accuracies1, accuracies2)
     plt.show()
 
 
